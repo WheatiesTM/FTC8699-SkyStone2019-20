@@ -5,6 +5,7 @@ import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 import com.qualcomm.robotcore.eventloop.opmode.Disabled;
 import com.qualcomm.robotcore.hardware.DcMotor;
+import com.qualcomm.robotcore.hardware.Servo;
 import com.qualcomm.robotcore.util.ElapsedTime;
 import com.qualcomm.robotcore.util.Range;
 
@@ -30,6 +31,13 @@ public class TestBot extends LinearOpMode {
     private DcMotor leftDrive = null;
     private DcMotor rightDrive = null;
 
+    Servo servo;
+
+    //Servo limits
+    static final double MAX_POS     =  0.6;     // Maximum rotational position
+    static final double MIN_POS     =  0.4;     // Minimum rotational position
+
+
     @Override
     public void runOpMode() {
 
@@ -41,11 +49,14 @@ public class TestBot extends LinearOpMode {
         // step (using the FTC Robot Controller app on the phone).
         leftDrive  = hardwareMap.get(DcMotor.class, "left_drive");
         rightDrive = hardwareMap.get(DcMotor.class, "right_drive");
-
         // Most robots need the motor on one side to be reversed to drive forward
         // Reverse the motor that runs backwards when connected directly to the battery
         leftDrive.setDirection(DcMotor.Direction.FORWARD);
         rightDrive.setDirection(DcMotor.Direction.REVERSE);
+
+        //Set up servo
+        servo = hardwareMap.get(Servo.class, "grab_servo");
+        double servoPos = 0.5;
 
         // Wait for the game to start (driver presses PLAY)
         waitForStart();
@@ -57,6 +68,7 @@ public class TestBot extends LinearOpMode {
             // Setup a variable for each drive wheel to save power level for telemetry
             double leftPower;
             double rightPower;
+
 
             // Choose to drive using either Tank Mode, or POV Mode
             // Comment out the method that's not used.  The default below is POV.
@@ -76,6 +88,15 @@ public class TestBot extends LinearOpMode {
             // Send calculated power to wheels
             leftDrive.setPower(leftPower);
             rightDrive.setPower(rightPower);
+
+            //Tell servo to move up or down depending on button pressed
+            if (gamepad1.a) {
+                servoPos = MIN_POS;
+            }
+            if (gamepad1.b) {
+                servoPos = MAX_POS;
+            }
+            servo.setPosition(servoPos);
 
             // Show the elapsed game time and wheel power.
             telemetry.addData("Status", "Run Time: " + runtime.toString());
